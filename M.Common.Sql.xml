@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:55:35">
+<Class name="M.Common.Sql">
+<Super>%RegisteredObject</Super>
+<TimeChanged>66435,83771.581483</TimeChanged>
+<TimeCreated>66435,61752.448028</TimeCreated>
+
+<Method name="DynamicSql2Array">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&sqlCode]]></FormalSpec>
+<ReturnType>%DynamicArray</ReturnType>
+<Implementation><![CDATA[
+    s ret = []
+    s sqlStatement = ##class(%SQL.Statement).%New()
+    s sqlStatus = sqlStatement.%Prepare(.sqlCode)
+    s sqlResult = sqlStatement.%Execute() 
+
+	$$$ThrowOnError(sqlStatus)
+	
+    s columns = sqlStatement.%Metadata.columns
+    s colCount = sqlResult.%ResultColumnCount
+    for {
+        q:('sqlResult.%Next())
+        s rowData = sqlResult.%GetData(1)
+        if (colCount = 1)&&($isobject(rowData)){
+            d ret.%Push(rowData)
+        }else{
+            #; 兼容多列
+            s rowData = {}
+            for i = 1 : 1 : colCount{
+                s val = sqlResult.%GetData(i)
+                s colName = columns.GetAt(i).colName
+                d rowData.%Set(colName, val)
+            }
+            d ret.%Push(rowData)
+        }
+    }
+    q ret
+]]></Implementation>
+</Method>
+
+<Method name="Json2Sql">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>zJson</FormalSpec>
+<Implementation><![CDATA[
+    s type = zJson.type
+    q $case(type,
+                "UPDATE": ..Json2SqlUpdate(zJson),
+                "INSERT": ..Json2SqlInsert(zJson),
+                "DELETE": ..Json2SqlDelete(zJson),
+                :""
+                )
+]]></Implementation>
+</Method>
+
+<Method name="Json2SqlInsert">
+<Description>
+ w ##class(M.Common.Sql).Json2SqlInsert({"type":"INSERT","table":"M_T.Score","id":"","data":{"MT_Math":90,"MT_Chinese":90,"MT_English":90}}).%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>zJson</FormalSpec>
+<Implementation><![CDATA[
+    s data = zJson.data
+    s table = zJson.table
+    
+    s iter = data.%GetIterator()
+    s nameStr = ""
+    s dataStr = ""
+    while iter.%GetNext(.key, .value) {
+        s nameStr = $s(nameStr = "" : key, 1 : nameStr _ "," _ key)
+        if ($listvalid(value)){
+            if (value = ""){
+                s fmtValue = "NULL"
+            }else{
+                s fmtValue = "$LISTFROMSTRING('" _ $lts(value) _ "')"
+            }
+        }else{
+            s fmtValue = $s(value = "" : "NULL" , 1 : "'" _ value _ "'")
+        }
+        s dataStr = $s(dataStr = "" : fmtValue, 1 : dataStr _ "," _ fmtValue)
+    }
+    q "INSERT INTO " _ table _ "(" _ nameStr _ ") VALUES (" _ dataStr _ ")"
+]]></Implementation>
+</Method>
+
+<Method name="Json2SqlUpdate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>zJson</FormalSpec>
+<Implementation><![CDATA[
+    s data = zJson.data
+    s table = zJson.table
+    s rowID = zJson.id
+    
+    s iter = data.%GetIterator()
+    s fieldDataStr = ""
+    while iter.%GetNext(.key, .value) {
+        if ($listvalid(value)){
+            if (value = ""){
+                s fmtValue = "NULL"
+            }else{
+                s fmtValue = "$LISTFROMSTRING('" _ $lts(value) _ "')"
+            }
+        }else{
+            s fmtValue = $s(value = "" : "NULL" , 1 : "'" _ value _ "'")
+        }
+
+        s fieldData = key _ " = " _ fmtValue
+        s fieldDataStr = $s(fieldDataStr = "" : fieldData, 1 : fieldDataStr _ "," _ fieldData)
+    }
+    q "UPDATE " _ table _ " SET " _ fieldDataStr _ " WHERE %ID = '" _ rowID _"'"
+]]></Implementation>
+</Method>
+
+<Method name="Json2SqlDelete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>zJson</FormalSpec>
+<Implementation><![CDATA[
+    s table = zJson.table
+    s rowID = zJson.id
+    q "DELETE FROM " _ table _ " WHERE %ID = '" _ rowID _ "'"
+]]></Implementation>
+</Method>
+
+<Method name="XJson2Sql">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>zJson</FormalSpec>
+<Implementation><![CDATA[    q ..XSQL(..Json2Sql(zJson))
+]]></Implementation>
+</Method>
+
+<Method name="XSQL">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>sqlStr</FormalSpec>
+<Implementation><![CDATA[
+	#define ThrowSqlException(%str)  throw:((SQLCODE '= 0)&&(SQLCODE '= 100)) ##class(%Exception.SystemException).%New("SQL错误", SQLCODE, , %str _ "：" _ " SQLCODE："_ SQLCODE  _ " %msg："_ $g(%msg))
+    s sqlStatement = ##class(%SQL.Statement).%New()
+    s sqlStatus = sqlStatement.%Prepare(sqlStr)
+    $$$ThrowOnError(sqlStatus)
+    s sqlResult = sqlStatement.%Execute()
+    s stateType = sqlStatement.%Metadata.statementType
+    if (sqlResult.%Message '= "") {
+	    $$$ThrowSqlException(sqlResult.%Message)
+    }else {
+        return sqlResult.%ROWID
+    }
+]]></Implementation>
+</Method>
+
+<Method name="MapJson2SqlFields">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>map:%DynamicObject,json:%DynamicObject</FormalSpec>
+<ReturnType>%DynamicObject</ReturnType>
+<Implementation><![CDATA[
+    #dim ret as %DynamicObject = {}
+    q:(map.%ToJSON() = "{}") json
+    
+    s iter = json.%GetIterator()
+    while iter.%GetNext(.key, .value) {
+        continue:(map.%GetTypeOf(key) = "unassigned") 
+        s newKey = map.%Get(key)   
+        d ret.%Set(newKey, value)       
+    } 
+    
+    q ret
+]]></Implementation>
+</Method>
+
+<Method name="MapJson2SelectInto">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>mapJson</FormalSpec>
+<ReturnType>%List</ReturnType>
+<Implementation><![CDATA[
+    #dim ret as %List = ""
+    s iter = mapJson.%GetIterator()
+    s mapList = ""
+    s fieldList = "" 
+    while iter.%GetNext(.mapKey, .sqlField) {
+        s fieldList = fieldList _ $lb(sqlField)
+        s mapList = mapList _ $lb(":" _ mapKey)
+    }
+    
+    q $lb($lts(fieldList), $lts(mapList))
+]]></Implementation>
+</Method>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject,tableName:%String</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[
+    s id = pJson.id
+    
+    #; 将表名替换为类名
+    s className = $replace(tableName, "_", ".")
+	
+	 #; 获取对照
+    s dataMap = $classmethod(className, "MapField")  
+    s result =  ..XJson2Sql({
+        "type": ($s(id '= "" : "UPDATE" , 1 : "INSERT")),
+        "table": (tableName),
+        "id": (id),
+        "data": (..MapJson2SqlFields(dataMap, pJson))
+    })
+    q result
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject,tableName:%String</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[
+	s id = pJson.id
+	q:(id = "") $$$OK
+	q ..XJson2Sql({
+	    "type": "DELETE",
+	    "table": (tableName),
+	    "id": (id)
+	})
+]]></Implementation>
+</Method>
+
+<Method name="Data">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%Integer,tableName:%String</FormalSpec>
+<ReturnType>%DynamicObject</ReturnType>
+<SqlProc>1</SqlProc>
+<Implementation><![CDATA[
+	#; 获取类名
+	s className = $replace(tableName, "_", ".")
+	
+	#; 获取映射
+	s mapJson = $classmethod(className, "MapField")
+
+	#; 组装查询SQL字符串
+	s str = "json_object("
+	s iter = mapJson.%GetIterator()
+	while iter.%GetNext(.key, .value) {
+		continue:(mapJson.%GetTypeOf(key) = "unassigned") 
+		s str = str _ "'" _key _ "'" _ ":" _ value _ ","
+
+	} 
+	
+	#; 删除最后一个逗号
+	s str = $e(str, 1, * - 1)
+	s str = str _ ")  as json "
+	s sql = "SELECT  " _ str _ " FROM " _ tableName _ " where %ID = ?"
+	
+	#; 执行查询
+	s mStatement = ##class(%SQL.Statement).%New()
+	s status = mStatement.%Prepare(.sql)
+	s result = mStatement.%Execute(id)
+	
+	#; 获取表的数据
+	while result.%Next() {
+		s jsonStr = result.%Get("json")
+		s json = {}.%FromJSON(jsonStr)
+	}
+	q json
+]]></Implementation>
+</Method>
+
+<Method name="Query">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject,tableName</FormalSpec>
+<Implementation><![CDATA[
+    s sqlCode($i(sqlCode)) = " SELECT IMP_Common.Sql_Data(%ID,'" _ tableName _ "')"
+    s sqlCode($i(sqlCode)) = " FROM " _ tableName _ ""
+    q ..DynamicSql2Array(.sqlCode)
+]]></Implementation>
+</Method>
+</Class>
+</Export>

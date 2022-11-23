@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:55:50">
+<Class name="M.T.Score">
+<Description>
+w ##class(M.T.Score).MapField().%ToJSON()</Description>
+<ClassType>persistent</ClassType>
+<SqlRowIdName>id</SqlRowIdName>
+<SqlTableName>Score</SqlTableName>
+<Super>%Persistent,M.Map</Super>
+<TimeChanged>66434,80977.761537</TimeChanged>
+<TimeCreated>66434,80246.000665</TimeCreated>
+
+<Property name="MTMath">
+<Type>%String</Type>
+<SqlFieldName>MT_Math</SqlFieldName>
+<Aliases>math</Aliases>
+</Property>
+
+<Property name="MTChinese">
+<Type>%String</Type>
+<SqlFieldName>MT_Chinese</SqlFieldName>
+<Aliases>chinese</Aliases>
+</Property>
+
+<Property name="MTEnglish">
+<Type>%String</Type>
+<SqlFieldName>MT_English</SqlFieldName>
+<Aliases>english</Aliases>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^M.T.ScoreD</DataLocation>
+<DefaultData>ScoreDefaultData</DefaultData>
+<IdLocation>^M.T.ScoreD</IdLocation>
+<IndexLocation>^M.T.ScoreI</IndexLocation>
+<StreamLocation>^M.T.ScoreS</StreamLocation>
+<Data name="ScoreDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>MTMath</Value>
+</Value>
+<Value name="3">
+<Value>MTChinese</Value>
+</Value>
+<Value name="4">
+<Value>MTEnglish</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

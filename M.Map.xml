@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:56:00">
+<Class name="M.Map">
+<Abstract>1</Abstract>
+<Super>%RegisteredObject</Super>
+<TimeChanged>66435,79897.880715</TimeChanged>
+<TimeCreated>66434,80629.65109</TimeCreated>
+
+<Method name="MapField">
+<Description>
+desc：映射字段
+没有写到%code里的代码是直接判断来执行的
+%class 是 %Dictionary.ClassDefinition 的对象
+%code 是 %Stream.MethodGenerator 的对象
+w ##class(CT.IMP.SysRole).MapField().%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<CodeMode>objectgenerator</CodeMode>
+<Implementation><![CDATA[
+	#; 不是抽象类直接退出
+	if '%class.Abstract {
+
+		#; 获取类名，如果类不声明关键字 类型为 ClassType = persistent 则退出
+		s className = %class.Name
+		q:(%class.ClassType '= "persistent") $$$OK
+		
+		d %code.WriteLine(" s obj = ..QueryFieldMap("""_ className _""")") 
+	    d %code.WriteLine(" q obj")   
+	}
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="QueryFieldMap">
+<Description>
+desc：查询映射字段
+w ##class(M.Map).QueryFieldMap("CT_IMP.SysRole").%ToJSON()
+w ##class(M.Map).QueryFieldMap("M.T.Score").%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>className</FormalSpec>
+<Implementation><![CDATA[
+	#; 包名
+	s schema = $p(className, ".", 1, * - 1)
+	
+	#; 表名
+	s table = $p(className, ".", *)
+	
+	#; 将包名替换为带下划线的架构名
+	s schema = $replace(schema, ".", "_")
+
+	s obj = ##class(%Library.DynamicObject).%New()  
+	s sql = "SELECT * FROM INFORMATION_SCHEMA.Columns where TABLE_NAME  = '"_table _"' AND TABLE_SCHEMA = '"_schema_"'"
+	s mStatement = ##class(%SQL.Statement).%New()
+	s status = mStatement.%Prepare(.sql)
+	$$$ThrowOnError(status)
+	s result = mStatement.%Execute()
+	
+	while result.%Next() {
+		
+		#; 取字段名称
+		s fieldName =  result.%Get("COLUMN_NAME")
+		
+		#; 取字别名
+		s propertyName = $replace(fieldName, "_", "")
+		s alies = $g(^oddDEF(className, "a",propertyName, 58))
+
+		#; 别名不为空取别名，否则取字段名
+		s key = $s(alies '= "" : alies, 1 : fieldName)
+
+		d obj.%Set(key, fieldName)
+	}
+
+    q obj
+]]></Implementation>
+</Method>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s tableName = ..GetTableNameByClassName($this)
+	q ##class(M.Common.Sql).Save(pJson, tableName)
+]]></Implementation>
+</Method>
+
+<Method name="Query">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s tableName = ..GetTableNameByClassName($this)
+	q ##class(M.Common.Sql).Query(pJson, tableName)
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s tableName = ..GetTableNameByClassName($this)
+	q ##class(M.Common.Sql).Delete(pJson, tableName)
+]]></Implementation>
+</Method>
+
+<Method name="Data">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s tableName = ..GetTableNameByClassName($this)
+	q ##class(M.Common.Sql).Data(pJson.id, tableName)
+]]></Implementation>
+</Method>
+
+<Method name="GetTableNameByClassName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>className</FormalSpec>
+<Implementation><![CDATA[
+	&sql(SELECT SqlQualifiedNameQ into :tableName FROM   %Dictionary.CompiledClass WHERE ID = :className)
+	q tableName
+]]></Implementation>
+</Method>
+</Class>
+</Export>

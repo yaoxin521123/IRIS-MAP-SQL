@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:55:42">
+<Class name="M.T.Person">
+<SqlTableName>Person</SqlTableName>
+<Super>%Persistent</Super>
+<TimeChanged>66434,77299.153916</TimeChanged>
+<TimeCreated>66370,37224.33444</TimeCreated>
+
+<Property name="MTName">
+<Type>%String</Type>
+<SqlFieldName>MT_Name</SqlFieldName>
+</Property>
+
+<Property name="MTAge">
+<Type>%Integer</Type>
+<SqlFieldName>MT_Age</SqlFieldName>
+</Property>
+
+<Property name="MTNo">
+<Type>%String</Type>
+<SqlFieldName>MT_No</SqlFieldName>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^M.T.PersonD</DataLocation>
+<DefaultData>PersonDefaultData</DefaultData>
+<IdLocation>^M.T.PersonD</IdLocation>
+<IndexLocation>^M.T.PersonI</IndexLocation>
+<StreamLocation>^M.T.PersonS</StreamLocation>
+<Data name="PersonDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>MTName</Value>
+</Value>
+<Value name="3">
+<Value>MTAge</Value>
+</Value>
+<Value name="4">
+<Value>MTNo</Value>
+</Value>
+<Value name="5">
+<Value>MTRowId2</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

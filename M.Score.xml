@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:56:15">
+<Class name="M.Score">
+<Super>%RegisteredObject</Super>
+<TimeChanged>66435,80628.154446</TimeChanged>
+<TimeCreated>66435,61372.734278</TimeCreated>
+
+<Method name="Insert">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	&sql(insert into M_T.Score (MT_Math, MT_Chinese, MT_English) values(:name, :age, :no))
+	q SQLCODE
+]]></Implementation>
+</Method>
+
+<Method name="QueryScoreById">
+<Description>
+w ##class(M.Score).QueryScoreById({"id" : 1}).%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	#; 只需要传入对应ID与表明
+    q ##class(M.Common.Sql).Data(pJson.id, "M_T.Score")
+]]></Implementation>
+</Method>
+
+<Method name="MainInsert">
+<Description>
+w ##class(M.Score).MainInsert()</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	s obj = {}
+	s obj.math = 90
+	s obj.chinese = 90
+	s obj.english = 90
+	#; 模拟前端传进来的json传
+	q ..SaveScore(obj)
+]]></Implementation>
+</Method>
+
+<Method name="SaveScore">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	#; 直接将json传如即可返回结果
+	s result = ##class(M.Common.Sql).Save(pJson, "M_T.Score")
+	q result
+]]></Implementation>
+</Method>
+
+<Method name="MainUpdate">
+<Description>
+w ##class(M.Score).MainUpdate()</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	s obj = {}
+	s obj.id = 1
+	s obj.math = 10
+	s obj.chinese = 10
+	s obj.english = 10
+	#; 模拟前端传进来的json传,update需要根据ID
+	q ..SaveScore(obj)
+]]></Implementation>
+</Method>
+
+<Method name="MainDelete">
+<Description>
+w ##class(M.Score).MainDelete()</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	s obj = {}
+	s obj.id = 2
+	q ..DeleteScore(obj)
+]]></Implementation>
+</Method>
+
+<Method name="DeleteScore">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	#; 直接将json传如即可返回结果
+	s result = ##class(M.Common.Sql).Delete(pJson, "M_T.Score")
+	q result
+]]></Implementation>
+</Method>
+
+<Method name="QueryScore">
+<Description>
+d ##class(M.Score).QueryScore({}).%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[    q ##class(M.Common.Sql).Query(pJson, "M_T.Score")
+]]></Implementation>
+</Method>
+
+<Method name="InsertRaw">
+<Description>
+w ##class(M.Score).InsertRaw()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+#;	s obj = {}
+#;	s obj.math = 90
+#;	s obj.chinese = 80
+#;	s obj.english = 70
+	q ##class(M.T.Score).Save(pJson)
+]]></Implementation>
+</Method>
+
+<Method name="UpdateRaw">
+<Description>
+w ##class(M.Score).UpdateRaw()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+#;	s obj = {}
+#;	s obj.id = 5
+#;	s obj.math = 20
+#;	s obj.chinese = 20
+#;	s obj.english = 20
+	q ##class(M.T.Score).Save(pJson)
+]]></Implementation>
+</Method>
+
+<Method name="DeleteRaw">
+<Description>
+w ##class(M.Score).DeleteRaw()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+#;	s obj = {}
+#;	s obj.id = 4
+
+	q ##class(M.T.Score).Delete(pJson)
+]]></Implementation>
+</Method>
+
+<Method name="DataRaw">
+<Description>
+w ##class(M.Score).DataRaw().%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+#;	s obj = {}
+#;	s obj.id = 5
+
+	q ##class(M.T.Score).Data(pJson)
+]]></Implementation>
+</Method>
+
+<Method name="QueryRaw">
+<Description>
+w ##class(M.Score).QueryRaw().%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+#;	s obj = {}
+
+	q ##class(M.T.Score).Query(pJson)
+]]></Implementation>
+</Method>
+</Class>
+</Export>

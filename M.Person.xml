@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2016.2 (Build 736U)" ts="2022-11-23 09:56:08">
+<Class name="M.Person">
+<Super>%RegisteredObject</Super>
+<TimeChanged>66435,83673.804961</TimeChanged>
+<TimeCreated>66435,83434.433431</TimeCreated>
+
+<Method name="Insert">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s name = pJson.name
+	s age = pJson.age
+	s no = pJson.no
+	&sql(insert into M_T.Person (MT_Name, MT_Age, MT_No) values(:name, :age, :no))
+	q SQLCODE
+]]></Implementation>
+</Method>
+
+<Method name="Update">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s id = pJson.id
+	s name = pJson.name
+	s age = pJson.age
+	s no = pJson.no
+	&sql(update M_T.Person set MT_Name = :name, MT_Age = :age, MT_No = :no where %ID = :id)
+	q SQLCODE
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject</FormalSpec>
+<Implementation><![CDATA[
+	s id = pJson.id
+	&sql(delete M_T.Person where ID = :id)
+	q SQLCODE
+]]></Implementation>
+</Method>
+
+<Method name="QueryBySql">
+<Description>
+w ##class(M.Sql).QueryBySql().%ToJSON()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject={{}}</FormalSpec>
+<Implementation><![CDATA[
+	s name = pJson.name
+	s sql = "SELECT ID,MT_Name, MT_Age, MT_No FROM M_T.Person "
+	if (name '= "") {
+		s sql = sql _ " where MT_Name = '" _ name _"'"
+	}
+	s mStatement = ##class(%SQL.Statement).%New()
+	s sc = mStatement.%Prepare(.sql)
+	s rs = mStatement.%Execute()
+	
+	s array = []
+	while rs.%Next() {
+		s name = rs.%Get("MT_Name")
+		s age = rs.%Get("MT_Age")
+		s no = rs.%Get("MT_No")
+		s id = rs.%Get("ID")
+		s obj = {}
+		s obj.name = name
+		s obj.age = age
+		s obj.no = no
+		s obj.id = id
+		d array.%Push(obj)
+	}
+	q array
+]]></Implementation>
+</Method>
+
+<Method name="GetDataById">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJson:%Library.DynamicObject={{}}</FormalSpec>
+<Implementation><![CDATA[
+	s id = pJson.id
+	s data = ^M.T.PersonD(id)
+	s name = $lg(data, 2)
+	s age = $lg(data, 3)
+	s no = $lg(data, 4)
+	s obj = {}
+	s obj.name = name
+	s obj.age = age
+	s obj.no = no
+	s obj.id = id
+	q obj
+]]></Implementation>
+</Method>
+</Class>
+</Export>
